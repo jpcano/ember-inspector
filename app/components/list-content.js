@@ -98,7 +98,7 @@ export default Component.extend(Evented, {
   columns: computed(() => []),
 
   /**
-   * Number passed from `x-list`. Indicates the header height
+   * Number passed from `list`. Indicates the header height
    * in pixels.
    *
    * @property headerHeight

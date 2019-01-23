@@ -1,17 +1,12 @@
-{{#x-list
+<List
   class="js-deprecations list_no-alternate-color"
-  headerHeight=0
-  name="deprecation-list"
-  schema=(hash columns=null)
-  setIsDragging=(action "setIsDragging" target=application)
-as |list|
-}}
+  @headerHeight="0"
+  @schema={{hash columns=null}}
+  @setIsDragging={{action "setIsDragging" target=this.application}} as |list|
+>
   {{#if filtered.length}}
     <tbody>
-      {{#each
-        filtered
-      as |content|
-      }}
+      {{#each filtered as |content|}}
         {{deprecation-item
           model=content
           openResource=(action "openResource")
@@ -36,4 +31,4 @@ as |list|
       </button>
     </div>
   {{/if}}
-{{/x-list}}
+</List>
