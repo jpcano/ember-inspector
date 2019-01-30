@@ -54,57 +54,171 @@ export default Component.extend({
   },
 
   drawCircles() {
-    let plot = select(this.element);
-    let data = get(this, 'data');
-    let width = get(this, 'width');
-    let height = get(this, 'height');
+    const dataset = {
+      "nodes": [
+        {
+          "index": 0,
+          "id": "controller-1",
+          "group": 1
+        }, {
+          "index": 1,
+          "id": "controller-2",
+          "group": 1
+        }, {
+          "index": 2,
+          "id": "controller-3",
+          "group": 1
+        }, {
+          "index": 3,
+          "id": "route-1",
+          "group": 2
+        }, {
+          "index": 4,
+          "id": "route-2",
+          "group": 2
+        }, {
+          "index": 5,
+          "id": "route-3",
+          "group": 2
+        }, {
+          "index": 6,
+          "id": "service-1",
+          "group": 4
+        }, {
+          "index": 7,
+          "id": "service-2",
+          "group": 4
+        }, {
+          "index": 8,
+          "id": "servcice-3",
+          "group": 4
+        }, {
+          "index": 9,
+          "id": "service-4",
+          "group": 4
+        }, {
+          "index": 10,
+          "id": "service-5",
+          "group": 4,
+        },
+      ],
+      "links": [
+        {
+          "source": 6, //values are indexes for entities in `nodes` array
+          "target": 1
+        }, {
+          "source": 6,
+          "target": 2
+        }, {
+          "source": 6,
+          "target": 3
+        }, {
+          "source": 6,
+          "target": 2
+        }, {
+          "source": 6,
+          "target": 5
+        }, {
+          "source": 7,
+          "target": 4
+        }, {
+          "source": 6,
+          "target": 4
+        }, {
+          "source": 3,
+          "target": 7
+        }, {
+          "source": 2,
+          "target": 1
+        }, {
+          "source": 8,
+          "target": 3
+        }, {
+          "source": 8,
+          "target": 5
+        }, {
+          "source": 4,
+          "target": 6
+        }, {
+          "source": 8,
+          "target": 2
+        }, {
+          "source": 1,
+          "target": 2
+        }, {
+          "source": 6,
+          "target": 7
+        },
+      ]
+    }
 
-    // Create a transition to use later
-    let t = transition()
-      .duration(250)
-      .ease(easeCubicInOut);
+  var width = get(this, 'width');
+  var height = get(this, 'height');
+  //Load Color Scale
+  var c10 = d3.scale.category10();
+  //Create an SVG element and append it to the DOM
+  var svgElement = d3.select("body")
+            .append("svg").attr({"width": width+margin.left+margin.right, "height": height+margin.top+margin.bottom})
+            .append("g")
+            .attr("transform","translate("+margin.left+","+margin.top+")");
+    //Extract data from dataset
+    var nodes = dataset.nodes;
+    var links = dataset.links;
+    //Create Force Layout
+    var force = d3.layout.force()
+            .size([width, height])
+            .nodes(nodes)
+            .links(links)
+            .gravity(0.05)
+            .charge(-200)
+            .linkDistance(200);
+    //Add links to SVG
+    var link = svgElement.selectAll(".link")
+          .data(links)
+          .enter()
+          .append("line")
+          .attr("stroke-width", 1)
+          .attr("class", "link");
+    //Add nodes to SVG
+    var node = svgElement.selectAll(".node")
+          .data(nodes)
+          .enter()
+          .append("g")
+          .attr("class", "node")
+          .call(force.drag);
+    //Add labels to each node
+    var label = node.append("text")
+            .attr("dy", "0.35em")
+            .attr("font-size", 12)
+            .text(function(d){ return d.id; });
+    //Add circles to each node
+    var circle = node.append("circle")
+            .attr("r", function(d){ return countInArray(d.index, links) * 3 || 3 })
+            .attr("fill", function(d){ return c10(d.group*10); });
+    //This function will be executed for every tick of force layout
+    force.on("tick", function(){
+      //Set X and Y of node
+      node.attr("r", function(d){ return 10; })
+        .attr("cx", function(d){ return d.x; })
+        .attr("cy", function(d){ return d.y; });
+      //Set X, Y of link
+      link.attr("x1", function(d){ return d.source.x; })
+      link.attr("y1", function(d){ return d.source.y; })
+      link.attr("x2", function(d){ return d.target.x; })
+      link.attr("y2", function(d){ return d.target.y; });
+      //Shift node a little
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    });
+    //Start the force layout calculation
+    force.start();
 
-    // X scale to scale position on x axis
-    let xScale = scaleLinear()
-      .domain(extent(data.map(d => d.timestamp)))
-      .range([0, width]);
-
-    // Y scale to scale radius of circles proportional to size of plot
-    let yScale = scaleLinear()
-      .domain(
-        // `extent()` requires that data is sorted ascending
-        extent(data.map(d => d.value).sort(ascending))
-      )
-      .range([0, height]);
-
-    // UPDATE EXISTING
-    let circles = plot.selectAll('circle').data(data);
-
-    // EXIT
-    circles
-      .exit()
-      .transition(t)
-      .attr('r', 0)
-      .remove();
-
-    // ENTER
-    let enterJoin = circles
-      .enter()
-      .append('circle')
-      .attr('fill', 'steelblue')
-      .attr('opacity', 0.5)
-
-    // Set initial size to 0 so we can animate it in from 0 to actual scaled radius
-      .attr('r', () => 0)
-      .attr('cy', () => height / 2)
-      .attr('cx', d => xScale(d.timestamp));
-
-    // MERGE + UPDATE EXISTING
-    enterJoin
-      .merge(circles)
-      .transition(t)
-      .attr('r', d => yScale(d.value) / 2)
-      .attr('cy', () => height / 2)
-      .attr('cx', d => xScale(d.timestamp));
+    function countInArray(subject, array) {
+      return array.reduce(function(acc, current){
+        if (current.target === subject) {
+          acc++;
+        }
+        return acc;
+      }, 0);
+    }
   }
 });
