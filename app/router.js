@@ -37,6 +37,7 @@ Router.map(function() {
     this.route('deprecations', { resetNamespace: true });
   });
 
+  this.route('dependency-graph');
 });
 
 export default Router;
