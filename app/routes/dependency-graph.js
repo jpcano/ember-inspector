@@ -1,6 +1,6 @@
 import Route from '@ember/routing/route';
 import { run } from '@ember/runloop';
-import { ascending } from 'd3-array';
+import d3 from 'd3';
 
 export default Route.extend({
   setupController(controller) {
@@ -31,7 +31,7 @@ export default Route.extend({
       data.push({ value: Math.round(Math.random() * 100), timestamp });
     }
 
-    return data.sort((a, b) => ascending(a.timestamp, b.timestamp));
+    return data.sort((a, b) => d3.ascending(a.timestamp, b.timestamp));
   }
 
 });

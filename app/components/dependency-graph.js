@@ -22,11 +22,7 @@ import { run } from '@ember/runloop';
 import { get } from '@ember/object';
 
 // Import the D3 packages we want to use
-import { select } from 'd3-selection';
-import { scaleLinear } from 'd3-scale';
-import { extent, ascending } from 'd3-array';
-import { transition } from 'd3-transition';
-import { easeCubicInOut } from 'd3-ease';
+import d3 from 'd3';
 
 export default Component.extend({
   layout,
