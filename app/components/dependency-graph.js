@@ -22,11 +22,7 @@ import { run } from '@ember/runloop';
 import { get } from '@ember/object';
 
 // Import the D3 packages we want to use
-import { select } from 'd3-selection';
-import { scaleLinear } from 'd3-scale';
-import { extent, ascending } from 'd3-array';
-import { transition } from 'd3-transition';
-import { easeCubicInOut } from 'd3-ease';
+import d3 from 'd3';
 
 export default Component.extend({
   layout,
@@ -54,26 +50,26 @@ export default Component.extend({
   },
 
   drawCircles() {
-    let plot = select(this.element);
+    let plot = d3.select(this.element);
     let data = get(this, 'data');
     let width = get(this, 'width');
     let height = get(this, 'height');
 
     // Create a transition to use later
-    let t = transition()
+    let t = d3.transition()
       .duration(250)
-      .ease(easeCubicInOut);
+      .ease(d3.easeCubicInOut);
 
     // X scale to scale position on x axis
-    let xScale = scaleLinear()
-      .domain(extent(data.map(d => d.timestamp)))
+    let xScale = d3.scaleLinear()
+      .domain(d3.extent(data.map(d => d.timestamp)))
       .range([0, width]);
 
     // Y scale to scale radius of circles proportional to size of plot
-    let yScale = scaleLinear()
+    let yScale = d3.scaleLinear()
       .domain(
         // `extent()` requires that data is sorted ascending
-        extent(data.map(d => d.value).sort(ascending))
+        d3.extent(data.map(d => d.value).sort(d3.ascending))
       )
       .range([0, height]);
 
