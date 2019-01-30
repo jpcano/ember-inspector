@@ -24,6 +24,10 @@ export default Component.extend({
     return this.get('model.length') > 1;
   }),
 
+  mixinDetailsStringified: computed('mixinDetails.[]', function() {
+    return JSON.stringify(this.get('mixinDetails'));
+  }),
+
   actions: {
     popStack() {
       if (this.get('isNested')) {
