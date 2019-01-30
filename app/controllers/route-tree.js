@@ -55,6 +55,10 @@ export default Controller.extend({
     });
   }),
 
+  rowsStringified: computed('rows.[]', function() {
+    return JSON.stringify(this.get('rows'));
+  }),
+
   actions: {
     inspectRoute(name) {
       this.get('port').send('objectInspector:inspectRoute', { name });
