@@ -30,8 +30,8 @@ export default Component.extend({
   tagName: 'svg',
   classNames: ['awesome-d3-widget'],
 
-  width: 1000,
-  height: 600,
+  width: 600,
+  height: 400,
 
   attributeBindings: ['width', 'height'],
 
@@ -50,57 +50,193 @@ export default Component.extend({
   },
 
   drawCircles() {
-    let plot = d3.select(this.element);
-    let data = get(this, 'data');
-    let width = get(this, 'width');
-    let height = get(this, 'height');
+var svg = d3.select(this.element);
+var width = get(this, 'width');
+var height = get(this, 'height');
 
-    // Create a transition to use later
-    let t = d3.transition()
-      .duration(250)
-      .ease(d3.easeCubicInOut);
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))
+    .force("charge", d3.forceManyBody().strength(-400))
+    .force("center", d3.forceCenter(width / 2, height / 2));
 
-    // X scale to scale position on x axis
-    let xScale = d3.scaleLinear()
-      .domain(d3.extent(data.map(d => d.timestamp)))
-      .range([0, width]);
+var graph = {
+      "nodes": [
+        {
+          "id": 0,
+          "name": "controller-1",
+          "group": 1
+        }, {
+          "id": 1,
+          "name": "controller-2",
+          "group": 1
+        }, {
+          "id": 2,
+          "name": "controller-3",
+          "group": 1
+        }, {
+          "id": 3,
+          "name": "route-1",
+          "group": 2
+        }, {
+          "id": 4,
+          "name": "route-2",
+          "group": 2
+        }, {
+          "id": 5,
+          "name": "route-3",
+          "group": 2
+        }, {
+          "id": 6,
+          "name": "service-1",
+          "group": 4
+        }, {
+          "id": 7,
+          "name": "service-2",
+          "group": 4
+        }, {
+          "id": 8,
+          "name": "servcice-3",
+          "group": 4
+        }, {
+          "id": 9,
+          "name": "service-4",
+          "group": 4
+        }, {
+          "id": 10,
+          "name": "service-5",
+          "group": 4,
+        },
+      ],
+      "links": [
+        {
+          "source_id": 6, //values are indexes for entities in `nodes` array
+          "target_id": 1
+        }, {
+          "source_id": 6,
+          "target_id": 2
+        }, {
+          "source_id": 6,
+          "target_id": 3
+        }, {
+          "source_id": 6,
+          "target_id": 2
+        }, {
+          "source_id": 6,
+          "target_id": 5
+        }, {
+          "source_id": 7,
+          "target_id": 4
+        }, {
+          "source_id": 6,
+          "target_id": 4
+        }, {
+          "source_id": 3,
+          "target_id": 7
+        }, {
+          "source_id": 2,
+          "target_id": 1
+        }, {
+          "source_id": 8,
+          "target_id": 3
+        }, {
+          "source_id": 8,
+          "target_id": 5
+        }, {
+          "source_id": 4,
+          "target_id": 6
+        }, {
+          "source_id": 8,
+          "target_id": 2
+        }, {
+          "source_id": 1,
+          "target_id": 2
+        }, {
+          "source_id": 6,
+          "target_id": 7
+        },
+      ]
+    };
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    // Y scale to scale radius of circles proportional to size of plot
-    let yScale = d3.scaleLinear()
-      .domain(
-        // `extent()` requires that data is sorted ascending
-        d3.extent(data.map(d => d.value).sort(d3.ascending))
-      )
-      .range([0, height]);
+  graph.links.forEach(function(d){
+    d.source = d.source_id;
+    d.target = d.target_id;
+  });
 
-    // UPDATE EXISTING
-    let circles = plot.selectAll('circle').data(data);
+  var link = svg.append("g")
+                .style("stroke", "#aaa")
+                .selectAll("line")
+                .data(graph.links)
+                .enter().append("line");
 
-    // EXIT
-    circles
-      .exit()
-      .transition(t)
-      .attr('r', 0)
-      .remove();
+  var node = svg.append("g")
+            .attr("class", "nodes")
+  .selectAll("circle")
+            .data(graph.nodes)
+  .enter().append("circle")
+          .attr("r", 6)
+          .call(d3.drag()
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended));
 
-    // ENTER
-    let enterJoin = circles
-      .enter()
-      .append('circle')
-      .attr('fill', 'steelblue')
-      .attr('opacity', 0.5)
+  var label = svg.append("g")
+      .attr("class", "labels")
+      .selectAll("text")
+      .data(graph.nodes)
+      .enter().append("text")
+        .attr("class", "label")
+        .text(function(d) { return d.name; });
 
-    // Set initial size to 0 so we can animate it in from 0 to actual scaled radius
-      .attr('r', () => 0)
-      .attr('cy', () => height / 2)
-      .attr('cx', d => xScale(d.timestamp));
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
 
-    // MERGE + UPDATE EXISTING
-    enterJoin
-      .merge(circles)
-      .transition(t)
-      .attr('r', d => yScale(d.value) / 2)
-      .attr('cy', () => height / 2)
-      .attr('cx', d => xScale(d.timestamp));
+  simulation.force("link")
+      .links(graph.links);
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+         .attr("r", function(d) { return countInArray(d.index, graph.links) * 3 || 3})
+         .style("fill", function(d) { return color(d.group) })
+         .style("stroke", "#969696")
+         .style("stroke-width", "1px")
+         .attr("cx", function (d) { return d.x+6; })
+         .attr("cy", function(d) { return d.y-6; });
+
+    label
+        .attr("x", function(d) { return d.x; })
+            .attr("y", function (d) { return d.y; })
+            .style("font-size", "12px").style("fill", "#222");
+          }
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart()
+      simulation.fix(d);
+    }
+
+    function dragged(d) {
+      simulation.fix(d, d3.event.x, d3.event.y);
+    }
+
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      simulation.unfix(d);
+    }
+
+    function countInArray(subject, array) {
+      return array.reduce(function(acc, current){
+        if (current.target_id === subject) {
+          acc++;
+        }
+        return acc;
+      }, 0);
+    }
   }
 });
