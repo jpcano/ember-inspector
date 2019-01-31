@@ -30,8 +30,8 @@ export default Component.extend({
   tagName: 'svg',
   classNames: ['awesome-d3-widget'],
 
-  width: 600,
-  height: 400,
+  width: 1440,
+  height: 900,
 
   attributeBindings: ['width', 'height'],
 
@@ -56,106 +56,10 @@ var height = get(this, 'height');
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody().strength(-400))
+    .force("charge", d3.forceManyBody().strength(-20))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-var graph = {
-      "nodes": [
-        {
-          "id": 0,
-          "name": "controller-1",
-          "group": 1
-        }, {
-          "id": 1,
-          "name": "controller-2",
-          "group": 1
-        }, {
-          "id": 2,
-          "name": "controller-3",
-          "group": 1
-        }, {
-          "id": 3,
-          "name": "route-1",
-          "group": 2
-        }, {
-          "id": 4,
-          "name": "route-2",
-          "group": 2
-        }, {
-          "id": 5,
-          "name": "route-3",
-          "group": 2
-        }, {
-          "id": 6,
-          "name": "service-1",
-          "group": 4
-        }, {
-          "id": 7,
-          "name": "service-2",
-          "group": 4
-        }, {
-          "id": 8,
-          "name": "servcice-3",
-          "group": 4
-        }, {
-          "id": 9,
-          "name": "service-4",
-          "group": 4
-        }, {
-          "id": 10,
-          "name": "service-5",
-          "group": 4,
-        },
-      ],
-      "links": [
-        {
-          "source_id": 6, //values are indexes for entities in `nodes` array
-          "target_id": 1
-        }, {
-          "source_id": 6,
-          "target_id": 2
-        }, {
-          "source_id": 6,
-          "target_id": 3
-        }, {
-          "source_id": 6,
-          "target_id": 2
-        }, {
-          "source_id": 6,
-          "target_id": 5
-        }, {
-          "source_id": 7,
-          "target_id": 4
-        }, {
-          "source_id": 6,
-          "target_id": 4
-        }, {
-          "source_id": 3,
-          "target_id": 7
-        }, {
-          "source_id": 2,
-          "target_id": 1
-        }, {
-          "source_id": 8,
-          "target_id": 3
-        }, {
-          "source_id": 8,
-          "target_id": 5
-        }, {
-          "source_id": 4,
-          "target_id": 6
-        }, {
-          "source_id": 8,
-          "target_id": 2
-        }, {
-          "source_id": 1,
-          "target_id": 2
-        }, {
-          "source_id": 6,
-          "target_id": 7
-        },
-      ]
-    };
+    var graph = get(this, 'data');
     var color = d3.scaleOrdinal(d3.schemeCategory10);
 
   graph.links.forEach(function(d){

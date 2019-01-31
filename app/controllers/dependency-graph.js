@@ -39,7 +39,8 @@ export default Controller.extend({
         target_id: i + 2
       });
     }
-    return JSON.stringify({ nodes, links });
+    // return JSON.stringify({ nodes, links });
+    return { nodes, links };
   }),
 
   rowsStringified: computed('model.[]', function() {
