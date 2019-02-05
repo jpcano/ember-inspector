@@ -30,8 +30,8 @@ export default Component.extend({
   tagName: 'svg',
   classNames: ['awesome-d3-widget'],
 
-  width: 1440,
-  height: 1000,
+  width: 1800,
+  height: 1400,
 
   attributeBindings: ['width', 'height'],
 
@@ -50,78 +50,78 @@ export default Component.extend({
   },
 
   drawCircles() {
-var svg = d3.select(this.element);
-var width = get(this, 'width');
-var height = get(this, 'height');
+    const svg = d3.select(this.element);
+    const width = get(this, 'width');
+    const height = get(this, 'height');
 
-var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody().strength(-12))
-    .force("center", d3.forceCenter(width / 2, height / 2));
+    const simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function(d) { return d.id; }))
+      .force("charge", d3.forceManyBody().strength(-18))
+      .force("center", d3.forceCenter(width / 2, height / 2));
 
-    var graph = get(this, 'data');
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
+    const graph = get(this, 'data');
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-  graph.links.forEach(function(d){
-    d.source = d.source_id;
-    d.target = d.target_id;
-  });
+    graph.links.forEach(function(d) {
+      d.source = d.source_id;
+      d.target = d.target_id;
+    });
 
-  var link = svg.append("g")
-                .style("stroke", "#aaa")
-                .selectAll("line")
-                .data(graph.links)
-                .enter().append("line");
+    const link = svg.append("g")
+      .style("stroke", "#aaa")
+      .selectAll("line")
+      .data(graph.links)
+      .enter().append("line");
 
-  var node = svg.append("g")
-            .attr("class", "nodes")
-  .selectAll("circle")
-            .data(graph.nodes)
-  .enter().append("circle")
-          .attr("r", 6)
-          .call(d3.drag()
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended));
+    const node = svg.append("g")
+      .attr("class", "nodes")
+      .selectAll("circle")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("r", 12)
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
 
-  var label = svg.append("g")
+    const label = svg.append("g")
       .attr("class", "labels")
       .selectAll("text")
       .data(graph.nodes)
       .enter().append("text")
-        .attr("class", "label")
-        .text(function(d) { return d.name; });
+      .attr("class", "label")
+      .text(function(d) { return d.name; });
 
-  simulation
+    simulation
       .nodes(graph.nodes)
       .on("tick", ticked);
 
-  simulation.force("link")
+    simulation.force("link")
       .links(graph.links);
 
-  function ticked() {
-    link
+    function ticked() {
+      link
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node
-         .attr("r", function(d) { return countInArray(d.index, graph.links) * 3 || 3})
-         .style("fill", function(d) { return color(d.group) })
-         .style("stroke", "#969696")
-         .style("stroke-width", "1px")
-         .attr("cx", function (d) { return d.x+6; })
-         .attr("cy", function(d) { return d.y-6; });
+      node
+        .attr("r", function(d) { return countInArray(d.index, graph.links) * 10 || 10; })
+        .style("fill", function(d) { return color(d.group); })
+        .style("stroke", "#969696")
+        .style("stroke-width", "1px")
+        .attr("cx", function (d) { return d.x + 6; })
+        .attr("cy", function(d) { return d.y - 6; });
 
-    label
+      label
         .attr("x", function(d) { return d.x; })
-            .attr("y", function (d) { return d.y; })
-            .style("font-size", "12px").style("fill", "#222");
-          }
+        .attr("y", function (d) { return d.y; })
+        .style("font-size", "12px").style("fill", "#222");
+    }
 
     function dragstarted(d) {
-      if (!d3.event.active) simulation.alphaTarget(0.3).restart()
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
       simulation.fix(d);
     }
 
@@ -135,7 +135,7 @@ var simulation = d3.forceSimulation()
     }
 
     function countInArray(subject, array) {
-      return array.reduce(function(acc, current){
+      return array.reduce(function(acc, current) {
         if (current.target_id === subject) {
           acc++;
         }
