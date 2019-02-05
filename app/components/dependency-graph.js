@@ -50,7 +50,14 @@ export default Component.extend({
   },
 
   drawCircles() {
-    const svg = d3.select(this.element);
+    const svg = d3.select(this.element)
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .call(d3.zoom().on("zoom", function () {
+        svg.attr("transform", d3.event.transform);
+      }))
+      .append("g");
+
     const width = get(this, 'width');
     const height = get(this, 'height');
 
@@ -121,17 +128,21 @@ export default Component.extend({
     }
 
     function dragstarted(d) {
+      d3.event.sourceEvent.stopPropagation();
       if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-      simulation.fix(d);
+      d.fx = d.x;
+      d.fy = d.y;
     }
 
     function dragged(d) {
-      simulation.fix(d, d3.event.x, d3.event.y);
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
     }
 
     function dragended(d) {
       if (!d3.event.active) simulation.alphaTarget(0);
-      simulation.unfix(d);
+      d.fx = null;
+      d.fy = null;
     }
 
     function countInArray(subject, array) {
